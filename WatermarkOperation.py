@@ -7,6 +7,7 @@
 import numpy as np
 import pywt
 import difflib
+import pandas as pd
 import cv2
 
 def detectWatQuan(wat_embedded,matrix,t1,t2):
@@ -16,52 +17,53 @@ def detectWatQuan(wat_embedded,matrix,t1,t2):
         for j in range(40):
             if abs(matrix[i][j])>=t1+X2 and abs(matrix[i][j])<=t2-X2:
                 watLen+=1
-    wat_detected=np.empty(watLen,dtype=tuple)
+    wat_detected=np.empty(watLen,dtype=bool)
+    wat_correlated=np.empty(watLen,dtype=bool)
     watNo=0
     for i in range(40):
         for j in range(40):
             if abs(matrix[i][j])>=t1+X2 and abs(matrix[i][j])<=t2-X2:
                 if abs(matrix[i][j])<(t1+t2)/2:
-                    wat_detected[watNo]=(False,40*i+j)
-                if abs(matrix[i][j])>(t1+t2)/2:
-                    wat_detected[watNo]=(True,40*i+j)
-                watNo+=1
-    satisfiedNo=0
-    wat_satisfied=list() 
-    for watmk_detected in wat_detected:
-        for watmk_embedded in wat_embedded:
-            if watmk_detected[1]==watmk_embedded[1]:
-                wat_satisfied.append(watmk_detected)
-                break     
+                    wat_detected[watNo]=False                    
+                elif abs(matrix[i][j])>(t1+t2)/2:
+                    wat_detected[watNo]=True
+                wat_correlated[watNo]=wat_embedded[40*i+j]  
+                watNo+=1                  
                 
-    return difflib.SequenceMatcher(None,wat_embedded,wat_satisfied).quick_ratio()
+    return difflib.SequenceMatcher(None,wat_correlated,wat_detected).quick_ratio()
 
 def embedWatQuan(matrix,t1,t2):
     X1=t2/10
-    watLen=0
+    wat=np.random.choice(a=[False,True],size=1600)
     for i in range(40):
         for j in range(40):
-            if (matrix[i][j]>t1 and matrix[i][j]<t2) or (matrix[i][j]<-t1 and matrix[i][j]>-t2):
-                watLen+=1
-    wat=np.random.choice(a=[False,True],size=watLen)
-    wat_stored=np.empty(watLen,dtype=tuple)
+            if (matrix[i][j]>t1 and matrix[i][j]<t2) and wat[40*i+j]==True:
+                matrix[i][j]=t2-X1
+            elif (matrix[i][j]>t1 and matrix[i][j]<t2) and wat[40*i+j]==False:
+                matrix[i][j]=t1+X1
+            elif (matrix[i][j]<-t1 and matrix[i][j]>-t2) and wat[40*i+j]==True:
+                matrix[i][j]=-t2+X1
+            elif (matrix[i][j]<-t1 and matrix[i][j]>-t2) and wat[40*i+j]==False:
+                matrix[i][j]=-t1-X1 
+    return wat
+
+def embedWatAddi(matrix,t1):
+    k=0.175
+    wat=np.random.randn(1600)
     watNo=0
     for i in range(40):
         for j in range(40):
-            if (matrix[i][j]>t1 and matrix[i][j]<t2) and wat[watNo]==True:
-                matrix[i][j]=t2-X1
-                wat_stored[watNo]=(True,40*i+j)
-                watNo+=1
-            elif (matrix[i][j]>t1 and matrix[i][j]<t2) and wat[watNo]==False:
-                matrix[i][j]=t1+X1
-                wat_stored[watNo]=(False,40*i+j)
-                watNo+=1
-            elif (matrix[i][j]<-t1 and matrix[i][j]>-t2) and wat[watNo]==True:
-                matrix[i][j]=-t2+X1
-                wat_stored[watNo]=(True,40*i+j)
-                watNo+=1
-            elif (matrix[i][j]<-t1 and matrix[i][j]>-t2) and wat[watNo]==False:
-                matrix[i][j]=-t1-X1
-                wat_stored[watNo]=(False,40*i+j)
-                watNo+=1  
-    return wat_stored
+            if matrix[i][j]>t1 or matrix[i][j]<-t1:
+                matrix[i][j]+=abs(matrix[i][j])*k*wat[40*i+j]
+    return wat
+
+def detectWatAddi(wat_embedded,matrix,t2):
+    correlation=0
+    N=0
+    for i in range(40):
+        for j in range(40):
+            if abs(matrix[i][j])>t2:
+                correlation+=matrix[i][j]*wat_embedded[40*i+j]
+                N+=1
+    corr=correlation/N
+    return corr

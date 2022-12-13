@@ -199,6 +199,17 @@ In my program, X1 is selected as t2/10.
        return corr
    ```
 
+### Watermark Sort
+
+| Watermark Sort | transform                                           | frequency | algorithm |
+| -------------- | --------------------------------------------------- | --------- | --------- |
+| Reference      | 3-level wavelet transform with Daubechies-8 filters | high      | quantized |
+| Low Frequency  | 3-level wavelet transform with Daubechies-8 filters | low       | quantized |
+| Fourier        | Fourier                                             | high      | quantized |
+| Additive       | 3-level wavelet transform with Daubechies-8 filters | high      | additive  |
+
+
+
 ### Attack
 
 1. Blurring: Gaussian Blur
@@ -210,23 +221,60 @@ In my program, X1 is selected as t2/10.
 
 ## Results
 
+### Invisibility of Watermark
+
+#### No Watermark
+
+![cover](..\code\image\cover.png)
+
+#### Reference
+
+![beforeAttack](..\code\image\ReferenceImg\beforeAttack.jpg)
+
+#### Low Frequency
+
+![beforeAttack](..\code\image\LowFrequencyImg\beforeAttack.jpg)
+
+#### Fourier
+
+![beforeAttack](..\code\image\FourierImg\beforeAttack.jpg)
+
+#### Additive
+
+![beforeAttack](..\code\image\AdditiveImg\beforeAttack.jpg)
+
 ### Measurement Method
 
+The below formula is used to get the value which describes the degeneration degree  of the watermark under different attack:
 
+$ D=\frac{\lvert R_{attacki}-R_{base}\rvert}{\lvert R_{before}-R_{base}\rvert}$
+
+D is the degeneration degree, $R_{base}$ is the ratio of the similarity  detecting the watermark instantly after embedding the watermark, $R_{before}$ is the ratio of the similarity detecting the watermark in the picture not embedded yet and $R_{attacki}$ is the ratio of the similarity  detecting the watermark in the embedded picture after the *i* th attack.
+
+The value of D is bigger when the degeneration is more severe until D is greater than 1, which means the watermark has been unable to be detected completely.
 
 ### Data Recording
 
-| Water Embedding method | Base Ratio |      | Gaussian Blur | Laplacian sharpen | rotated Pi/2 | Crop  | compressed with quality of 5 | salt and pepper with snr of 0.8 | before embed |
-| ---------------------- | ---------- | ---- | ------------- | ----------------- | ------------ | ----- | ---------------------------- | ------------------------------- | ------------ |
-| Reference              | 0.963      |      | 0.433         | 0.151             | 0.105        | 0.567 | 0.995                        | 0.527                           | 0.463        |
-| Low Frequency          | 0.963      |      | 0.985         | 0                 | 0.103        | 0.554 | 0.995                        | 0.849                           | 0.319        |
-|                        |            |      |               |                   |              |       |                              |                                 |              |
+| Water Embedding method |      | Blur   | sharpen | rotated | Crop  | compressed | salt and pepper |
+| ---------------------- | ---- | ------ | ------- | ------- | ----- | ---------- | --------------- |
+| Reference              |      | 3.513  | 3.112   | 0.388   | 0.420 | 0.068      | 0.523           |
+| Low Frequency          |      | 0.003  | 17.298  | 0.215   | 0.094 | 0          | 0.158           |
+| Fourier                |      | 16.610 | 1.519   | 1.264   | 0.533 | 0.792      | 0.974           |
+| Additive               |      | 0.068  | 0.213   | 0.839   | 0.584 | 0.027      | 0.057           |
+|                        |      |        |         |         |       |            |                 |
 
-$\alpha_1=115/558=0.206$
+## Discussion
 
-$\alpha_2=200/558=0.358$
+Comparatively speaking, the robustness of *Low Frequency* and *Additive* is better than the *Reference*.  Especially, the *Low Frequency*, it is quite robust to the attacks in this experiment. While according to the authoritative essay[^1], the watermark embedded in low-pass bands of the wavelet domain  affects the fidelity of the watermarked image and the additive algorithm needs a lot of trails to obtain the most possible watermark serial. Furthermore, the watermark in high-pass bands is resistant to another set of attacks such as histogram equalization, intensity adjustment, and gamma correction which are lack tested here. There is no denying that the experiment is still one-sided. As for the *Fourier*, it seems that the Fourier transform is not suitable to collocate with the quantized algorithm, which is consistent to some popular watermark embedding methods[^3]. They usually use additive algorithm to embed into Fourier high-frequency band.
 
 ## References and Note
 
 [^1]:Abeer D. Algarni and Hanaa A. Abdallah. Blind Wavelet-Based Image Watermarking
 [^2]:The seeds of the random numbers used to generate the watermark in the report are all 261025
+[^3]:https://zhuanlan.zhihu.com/p/379228103
+[^4]: https://blog.csdn.net/wsp_1138886114/article/details/116780542
+[^5]:https://pywavelets.readthedocs.io/en/latest/ref/index.html
+[^6]:https://github.com/guofei9987/blind_watermark
+
+
+

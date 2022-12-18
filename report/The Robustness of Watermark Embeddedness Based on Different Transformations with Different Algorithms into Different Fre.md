@@ -10,7 +10,9 @@ Blind watermark, wavelet transform, Fourier transform, robustness, quantization 
 
 ## Introduce
 
-Watermark is usually used to identify the source of some image or claim the copyright of it. In this essay, we are talking about the blind watermark. In some unprofessional blogs, the blind watermark is confused with the watermark with good invisibility. Actually, the so-called blind watermark is referred that the original picture is not necessary for extracting the watermark from the embedded picture. A kind of method that the blind watermark is embedded into the high-frequency band of the 3-level wavelet transform by quantized algorithm  is recommended by an authoritative essay[^1]. So, here, we will explore the robustness of similar methods based on it by changing one factor at a time. In other words, the method that the blind watermark is embedded into low-frequency band of 3-level wavelet transform by quantized algorithm, the method that the blind watermark is embedded into high-frequency band of Fourier transform by quantize algorithm and the method that the blind watermark is embedded into high-frequency band of 3-level wavelet transform by additive algorithm are involved into this report. To compare their robustness, the attacks including blurring, sharpening, cropping, rotating, compressing, salt and pepper noise are imposed. The degree of the watermark degeneration will be recorded as according.
+Watermark is usually used to identify the source of some image or claim the copyright of it. In this essay, we are talking about the blind watermark. In some unprofessional blogs, the blind watermark is confused with the watermark with good invisibility. Actually, the so-called blind watermark is referred that the original picture is not necessary for extracting the watermark from the embedded picture. 
+
+A kind of method that the blind watermark is embedded into the high-frequency band of the 3-level wavelet transform by quantized algorithm  is recommended by an authoritative essay[^1]. So, here, we will explore the robustness of similar methods based on it by changing one factor at a time. In other words, the method that the blind watermark is embedded into low-frequency band of 3-level wavelet transform by quantized algorithm, the method that the blind watermark is embedded into high-frequency band of Fourier transform by quantized algorithm and the method that the blind watermark is embedded into high-frequency band of 3-level wavelet transform by additive algorithm are involved into this report. To compare their robustness, the attacks including blurring, sharpening, cropping, rotating, compressing, salt and pepper noise are imposed. The degree of the watermark degeneration will be recorded as according.
 
 ## Method
 
@@ -184,7 +186,7 @@ In my program, X1 is selected as t2/10.
 
    Usually, a detection threshold τ is established to make the detection decision if δ τ, where only the coefficients above the detection threshold are considered.
 
-   But here, we only need to verify the robustness of the watermark instead of ensuring whether the watermark exist or not, so there is no need to set the threshold.
+   But here, we only need to verify the robustness of the watermark instead of ensuring whether the watermark exists or not, so there is no need to set the threshold.
 
    ```python
    def detectWatAddi(wat_embedded,matrix,t2):

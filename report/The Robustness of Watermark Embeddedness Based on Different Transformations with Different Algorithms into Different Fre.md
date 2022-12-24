@@ -10,7 +10,7 @@ Blind watermark, wavelet transform, Fourier transform, robustness, quantization 
 
 ## Introduce
 
-Watermark is usually used to identify the source of some image or claim the copyright of it. In this essay, we are talking about the blind watermark. In some unprofessional blogs, the blind watermark is confused with the watermark with good invisibility. Actually, the so-called blind watermark is referred that the original picture is not necessary for extracting the watermark from the embedded picture. 
+Watermark is usually used to identify the source of some image or claim the copyright of it. In this essay, we are talking about the blind watermark. In some unprofessional blogs, the blind watermark is confused with the watermark with good invisibility. Actually, the so-called blind watermark is referred that the original picture is not necessary for extracting the watermark from the embedded picture.
 
 A kind of method that the blind watermark is embedded into the high-frequency band of the 3-level wavelet transform by quantized algorithm  is recommended by an authoritative essay[^1]. So, here, we will explore the robustness of similar methods based on it by changing one factor at a time. In other words, the method that the blind watermark is embedded into low-frequency band of 3-level wavelet transform by quantized algorithm, the method that the blind watermark is embedded into high-frequency band of Fourier transform by quantized algorithm and the method that the blind watermark is embedded into high-frequency band of 3-level wavelet transform by additive algorithm are involved into this report. To compare their robustness, the attacks including blurring, sharpening, cropping, rotating, compressing, salt and pepper noise are imposed. The degree of the watermark degeneration will be recorded as according.
 
@@ -56,11 +56,9 @@ The low-frequency band is not shifted to the center, so I only need to gain the 
 ##### Embedding
 
 1. The watermark is generated as random Boolean values whose size is the same as the embedded band(in my program:40*40) by a certain seed[^2].
-
 2. The coefficients in the embedded band which have magnitude*(the absolute value)* higher than t1 and lower than t2 are chosen to hide in. A threshold t = α$\lvert C \rvert_{max}$ is selected
 
-   *0.01< α<0.1 and t2>t1>t* 
-
+   *0.01< α<0.1 and t2>t1>t*
 3. The quantization process is done as shown
 
    If $w_{ij}=true$ and $c_{ij}>0$, then $c'_{ij}=t2-X1$
@@ -72,10 +70,7 @@ The low-frequency band is not shifted to the center, so I only need to gain the 
    If $w_{ij}=false$ and $c_{ij}<0$, then $c'_{ij}=-t1-X1$
 
    $c_{ij}$ is the coefficient satisfying the condition. $w_{ij}$ is the watermark value at the corresponding position. $c'_{ij}$ is the coefficient after quantization.  X1 narrows the range between the two quantization levels t1 and t2 in order to perform a robust oblivious detection
-
 4. After all the selected coefficients are quantized, the inverse discrete wavelet transform (IDWT) is applied, and the watermarked image is obtained.
-
-
 
 ![](./image/embedquan.png)
 
@@ -113,12 +108,10 @@ In my program, X1 is selected as t2/10.
    $w'_{ij}$ is the watermark detected at the corresponding position.
 
    ![detectquan](.\image\detectquan.png)
-
+   
 3. Then the correlation process is applied between the recovered watermark and the original watermark, obtained via the secret key, just only in the locations of the selected coefficients
 
    ```python
-   import difflib
-   
    def detectWatQuan(wat_embedded,matrix,t1,t2):
        X2=t2/20
        watLen=0
@@ -133,25 +126,55 @@ In my program, X1 is selected as t2/10.
            for j in range(40):
                if abs(matrix[i][j])>=t1+X2 and abs(matrix[i][j])<=t2-X2:
                    if abs(matrix[i][j])<(t1+t2)/2:
-                       wat_detected[watNo]=False                    
+                       wat_detected[watNo]=False                  
                    elif abs(matrix[i][j])>(t1+t2)/2:
                        wat_detected[watNo]=True
                    wat_correlated[watNo]=wat_embedded[40*i+j]  
-                   watNo+=1                  
-                   
-       return difflib.SequenceMatcher(None,wat_correlated,wat_detected).quick_ratio()
+                   watNo+=1                
+   
+       length=len(wat_correlated)           
+       sum0=0
+       for i in range(length):
+               if(wat_correlated[i]==True):
+                   ii=1
+               else:
+                   ii=0
+               if(wat_detected[i]==True):
+                   jj=1
+               else:
+                   jj=0
+               sum0+=ii*jj
+       
+       sum1=0
+       for i in range(length):
+           if(wat_correlated[i]==True):
+                   ii=1
+           else:
+                   ii=0
+           sum1+=np.square(ii)
+           
+       sum2=0
+       for i in range(length):
+           if(wat_detected[i]==True):
+                   jj=1
+           else:
+                   jj=0
+           sum2+=np.square(jj)
+         
+       NCC=sum0/(np.sqrt(sum1)*np.sqrt(sum2))
+       return NCC
    ```
-
-   In my program, X1 is selected as t2/10. And the correlation is acquired by using `difflib.SequenceMatcher`
+   
+   In my program, X1 is selected as t2/10. And the correlation is acquired by the formula below:
+   
+   ![correlation](.\image\correlation.jpg)
 
 #### Additive algorithm(Dugad’s method)
 
 ##### Embedding
 
 1. From all wavelet coefficients, the coefficients of magnitude higher than t1 are chosen. This proves that only significant coefficients are used.
-
 2. Then the zero mean and unit variance watermark are generated with a known seed value; the watermark should be equal in size to the input image(in my program:40*40)
-
 3. The watermark is embedded in each location which has wavelet coefficient with magnitude higher than t1; the watermarked wavelet coefficient is given:
 
    ![embedadd](.\image\embedadd.png)
@@ -177,9 +200,7 @@ In my program, X1 is selected as t2/10.
 ##### Detection
 
 1. All wavelet coefficients of magnitude greater than t2 from a possibly corrupted watermarked image are selected. Note that by setting t2 > t1, the robustness is increased.
-
 2. Wavelet coefficients with magnitude higher than t2 are used in the detection process; these detected values are correlated with the watermark values at the same locations.
-
 3. The correlation δ is estimated by correlating the watermark sequence w directly with all N coefficients of the embedded image V*
 
    ![detectadd](.\image\detectadd.png)
@@ -209,8 +230,6 @@ In my program, X1 is selected as t2/10.
 | Low Frequency  | 3-level wavelet transform with Daubechies-8 filters | low       | quantized |
 | Fourier        | Fourier                                             | high      | quantized |
 | Additive       | 3-level wavelet transform with Daubechies-8 filters | high      | additive  |
-
-
 
 ### Attack
 
@@ -257,13 +276,15 @@ The value of D is bigger when the degeneration is more severe until D is greater
 
 ### Data Recording
 
-| Water Embedding method |      | Blur   | sharpen | rotated | Crop  | compressed | salt and pepper |
-| ---------------------- | ---- | ------ | ------- | ------- | ----- | ---------- | --------------- |
-| Reference              |      | 3.513  | 3.112   | 0.388   | 0.420 | 0.068      | 0.523           |
-| Low Frequency          |      | 0.003  | 17.298  | 0.215   | 0.094 | 0          | 0.158           |
-| Fourier                |      | 16.610 | 1.519   | 1.264   | 0.533 | 0.792      | 0.974           |
-| Additive               |      | 0.068  | 0.213   | 0.839   | 0.584 | 0.027      | 0.057           |
-|                        |      |        |         |         |       |            |                 |
+If the value is nan, that means the watermark embedded can't be detected successfully.
+
+| Water Embedding method |  | Blur   | sharpen | rotated | Crop  | compressed | salt and pepper |
+| ---------------------- | - | ------ | ------- | ------- | ----- | ---------- | --------------- |
+| Reference              |  | 0.876 | 1.171 | 0.896 | 0.405 | 0.031     | 0.776         |
+| Low Frequency          |  | 0  | nan | 1.120 | 0.016 | 0          | 0.281        |
+| Fourier                |  | nan | 0.429 | 0.320 | 1.186 | 0.265  | 1.609           |
+| Additive               |  | 0.068  | 0.213   | 0.839   | 0.584 | 0.027      | 0.057           |
+|                        |  |        |         |         |       |            |                 |
 
 ## Discussion
 
@@ -271,12 +292,14 @@ Comparatively speaking, the robustness of *Low Frequency* and *Additive* is bett
 
 ## References and Note
 
-[^1]:Abeer D. Algarni and Hanaa A. Abdallah. Blind Wavelet-Based Image Watermarking
-[^2]:The seeds of the random numbers used to generate the watermark in the report are all 261025
-[^3]:https://zhuanlan.zhihu.com/p/379228103
+[^1]: Abeer D. Algarni and Hanaa A. Abdallah. Blind Wavelet-Based Image Watermarking
+
+[^2]: The seeds of the random numbers used to generate the watermark in the report are all 261025
+
+[^3]: https://zhuanlan.zhihu.com/p/379228103
+
 [^4]: https://blog.csdn.net/wsp_1138886114/article/details/116780542
-[^5]:https://pywavelets.readthedocs.io/en/latest/ref/index.html
-[^6]:https://github.com/guofei9987/blind_watermark
 
+[^5]: https://pywavelets.readthedocs.io/en/latest/ref/index.html
 
-
+[^6]: https://github.com/guofei9987/blind_watermark

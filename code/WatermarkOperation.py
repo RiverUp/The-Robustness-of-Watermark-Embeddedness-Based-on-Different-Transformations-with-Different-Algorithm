@@ -28,9 +28,43 @@ def detectWatQuan(wat_embedded,matrix,t1,t2):
                 elif abs(matrix[i][j])>(t1+t2)/2:
                     wat_detected[watNo]=True
                 wat_correlated[watNo]=wat_embedded[40*i+j]  
-                watNo+=1                  
+                watNo+=1
+    length=len(wat_correlated)           
+    sum0=0
+    for i in range(length):
+            if(wat_correlated[i]==True):
+                ii=1
+            else:
+                ii=0
+            if(wat_detected[i]==True):
+                jj=1
+            else:
+                jj=0
+            sum0+=ii*jj
+    
+    sum1=0
+    for i in range(length):
+        if(wat_correlated[i]==True):
+                ii=1
+        else:
+                ii=0
+        sum1+=np.square(ii)
+        
+    sum2=0
+    for i in range(length):
+        if(wat_detected[i]==True):
+                jj=1
+        else:
+                jj=0
+        sum2+=np.square(jj)
+    
+    #print(wat_detected)
+    NCC1=np.sqrt(sum1)
+    NCC2=np.sqrt(sum2)
+    NCC=sum0/(NCC1*NCC2)
+    return NCC
                 
-    return difflib.SequenceMatcher(None,wat_correlated,wat_detected).quick_ratio()
+    #return difflib.SequenceMatcher(None,wat_correlated,wat_detected).quick_ratio()
 
 def embedWatQuan(matrix,t1,t2):
     X1=t2/10
